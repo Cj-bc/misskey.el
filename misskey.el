@@ -4,7 +4,7 @@
 
 ;; Author:  <cj.bc_sd@outlook.jp>
 ;; Keywords: hypermedia
-;; Package-Requires: (request-deferred)
+;; Package-Requires: (request-deferred deferred)
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,24 +25,25 @@
 
 ;;; Code:
 
+(require 'deferred)
 (require 'request-deferred)
 (require 'subr)
 (require 'seq)
 
-(defun misskey/call (host path body)
+(defun misskey/call-deferred (host path body)
   "General function to call api"
-  (request (format "https://%s/api/%s" host path)
-	   :type "POST"
-	   :data (json-encode body)
-	   :parser '(lambda ()
-		      (let ((json-object-type 'plist))
-			(json-read)))
-	   :headers '(("Content-Type" . "application/json"))
-	   :error (cl-function (lambda (&key error-thrown &allow-other-keys)
-		     (message "failed to retrive info. (%s)" error-thrown)))
-	   :success (cl-function (lambda (&key data &allow-other-keys)
-		       (with-current-buffer (get-buffer-create "*scratch*") data)))
-	   ))
+  (request-deferred
+   (format "https://%s/api/%s" host path)
+   :type "POST"
+   :data (json-encode body)
+   :parser '(lambda ()
+  	      (let ((json-object-type 'plist))
+  		(json-read)))
+   :headers '(("Content-Type" . "application/json"))
+   :error (cl-function (lambda (&key error-thrown &allow-other-keys)
+  			 (message "failed to retrive info. (%s)" error-thrown)))
+   :success (cl-function (lambda (&key data &allow-other-keys)
+  			   (with-current-buffer (get-buffer-create "*scratch*") data)))))
 
 (cl-defstruct misskeyEndpoint
   (path :type string)
@@ -64,11 +65,14 @@ Valid body are:
 	   (string-or-null-p (plist-get body :host)))))
 
 (defun misskey/api/users/show (body)
-  "call users/show API.
+  "call users/show API. It'll return deferred object when succeed to
+call API properly, nil otherwise.
 
 https://misskey-hub.net/docs/api/endpoints/users/show.html"
   (when (misskey/api/users/show/--validate-request body)
-      (misskey/call "misskey.io" "users/show" body)))
+    (deferred:$
+      (misskey/call-deferred "misskey.io" "users/show" body)
+      (deferred:nextc it 'request-response-data))))
 
 
 (provide 'misskey)
