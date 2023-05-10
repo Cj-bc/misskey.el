@@ -30,10 +30,15 @@
 (require 'subr)
 (require 'seq)
 
-(defun misskey/call-deferred (host path body)
+(cl-defstruct misskey/misskeyEnv
+  (host :type string)
+  (token :type string))
+
+
+(defun misskey/call-deferred (env path body)
   "General function to call api"
   (request-deferred
-   (format "https://%s/api/%s" host path)
+   (format "https://%s/api/%s" (misskey/misskeyEnv-host env) path)
    :type "POST"
    :data (json-encode body)
    :parser '(lambda ()
@@ -48,6 +53,7 @@
 (cl-defstruct misskeyEndpoint
   (path :type string)
   (request-validator :type function))
+
 
 (defun misskey/api/users/show/--validate-request (body)
   "Return t when body is valid, `nil' otherwise.
@@ -64,16 +70,15 @@ Valid body are:
       (and (stringp (plist-get body :username))
 	   (string-or-null-p (plist-get body :host)))))
 
-(defun misskey/api/users/show (body)
+(defun misskey/api/users/show (env body)
   "call users/show API. It'll return deferred object when succeed to
 call API properly, nil otherwise.
 
 https://misskey-hub.net/docs/api/endpoints/users/show.html"
   (when (misskey/api/users/show/--validate-request body)
     (deferred:$
-      (misskey/call-deferred "misskey.io" "users/show" body)
+      (misskey/call-deferred env "users/show" body)
       (deferred:nextc it 'request-response-data))))
-
 
 (provide 'misskey)
 ;;; misskey.el ends here
