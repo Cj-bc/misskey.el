@@ -31,12 +31,16 @@
 (require 'seq)
 
 (cl-defstruct misskey/misskeyEnv
+  "Contains configurations for API call."
   (host :type string)
   (token :type string))
 
 
 (defun misskey/call-deferred (env path body)
-  "General function to call api"
+  "General function to call api. This will return deferred object immediately, and run request asynchronously.
+
+ENV should be `misskey/misskeyEnv' struct. PATH should be a string indicating relataive path of the API
+endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PATH."
   (request-deferred
    (format "https://%s/api/%s" (misskey/misskeyEnv-host env) path)
    :type "POST"
@@ -57,8 +61,9 @@
 
 (defun misskey/api/users/show/--validate-request (body)
   "Return t when body is valid, `nil' otherwise.
+This allows other keys existence (Won't return nil even if there's some keys that aren't recognized)
 
-Valid body are:
+Valid bodies are:
 - (:userId \"USERID\")
 - (:userIds (\"USERID\" \"USERID2\" ...))
 - (:username \"USERNAME\")
