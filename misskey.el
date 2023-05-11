@@ -3,7 +3,7 @@
 ;; Copyright (C) 2023  Cj-bc a.k.a Cj.bc_sd
 
 ;; Author:  <cj.bc_sd@outlook.jp>
-;; Keywords: hypermedia
+;; Keywords: comm, lisp
 ;; Package-Requires: (request-deferred deferred)
 
 ;; This program is free software; you can redistribute it and/or modify
