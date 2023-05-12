@@ -84,5 +84,15 @@ https://misskey-hub.net/docs/api/endpoints/users/show.html"
       (misskey/call-deferred env "users/show" body)
       (deferred:nextc it 'request-response-data))))
 
+(defun misskey/api/notes/local-timeline (env body)
+  (deferred:$
+    (misskey/call-deferred env "notes/local-timeline" body)
+    (deferred:nextc it 'request-response-data)))
+
+(defun misskey/api/users/notes (env body)
+  (deferred:$
+    (misskey/call-deferred env "users/notes" body)
+    (deferred:nextc it 'request-response-data)))
+
 (provide 'misskey)
 ;;; misskey.el ends here
