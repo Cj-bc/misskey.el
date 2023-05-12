@@ -59,6 +59,15 @@ output will be:
    ((sequencep obj) (seq-map `(lambda (item) (misskey/json/walk item ,key ,func)) obj))
    (t obj)))
 
+(defun misskey/json-read (&optional buf)
+  "`json-read' with some modification for ease.
+
+1. Convert timestamp string into Lisp timestamp"
+  (with-current-buffer (or buf (current-buffer))
+    (let* ((json-object-type 'plist)
+	   (raw (json-read)))
+      (misskey/json/walk raw :createdAt '(lambda (d) (iso8601-parse d))))))
+
 (defun misskey/call-deferred (env path body)
   "General function to call api. This will return deferred object immediately, and run request asynchronously.
 
