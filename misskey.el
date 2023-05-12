@@ -34,6 +34,30 @@
   (host :type string)
   (token :type string))
 
+(defun misskey/json/walk (obj key func)
+  "walk plist and apply FUNC for each occurrence of KEY.
+It assumes OBJ is valid plist.
+
+* Examples
+
+Given input:
+(misskey/json/walk
+  (:id \"NOTEID\" :createdAt \"2020-01-01T01:01:01.000Z\"
+   :renote (:id \"RENOTED_NOTE_ID\" :createdAt \"2019-01-01T01:01:01.000Z\"
+            :files [(:createdAt \"2019-01-01T01:01:01.000Z\")]))
+  :createdAt
+)
+output will be:
+
+"
+  (cond
+   ((plistp obj)
+    (when (plist-member obj key)
+      (setq obj (plist-put obj key (funcall func (plist-get obj key)))))
+    (seq-map `(lambda (item) (misskey/json/walk item ,key ,func)) obj))
+   ((stringp obj) obj) ;; As string is 'sequence', I have to treat string before testing `sequencep'
+   ((sequencep obj) (seq-map `(lambda (item) (misskey/json/walk item ,key ,func)) obj))
+   (t obj)))
 
 (defun misskey/call-deferred (env path body)
   "General function to call api. This will return deferred object immediately, and run request asynchronously.
