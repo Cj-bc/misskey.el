@@ -77,9 +77,7 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
    (format "https://%s/api/%s" (misskey/misskeyEnv-host env) path)
    :type "POST"
    :data (json-encode body)
-   :parser '(lambda ()
-  	      (let ((json-object-type 'plist))
-  		(json-read)))
+   :parser 'misskey/json-read
    :headers '(("Content-Type" . "application/json"))
    :error (cl-function (lambda (&key error-thrown &allow-other-keys)
   			 (message "failed to retrive info. (%s)" error-thrown)))
