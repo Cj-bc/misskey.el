@@ -81,8 +81,6 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
    :headers '(("Content-Type" . "application/json"))
    :error (cl-function (lambda (&key error-thrown &allow-other-keys)
   			 (message "failed to retrive info. (%s)" error-thrown)))
-   :success (cl-function (lambda (&key data &allow-other-keys)
-  			   (with-current-buffer (get-buffer-create "*scratch*") data)))))
 
 (cl-defstruct misskeyEndpoint
   (path :type string)
