@@ -1,0 +1,57 @@
+[[file:JA_README.org][にほんご]]
+
+
+*This is still in development. Might be too unstable to use*
+
+* misskey.el -- Elisp misskey library
+** Installation
+Clone this repository or use your favorite package managers.
+I believe all dependencies are installed automatically, but here's list of current
+dependencies. 
+
++ [[https://github.com/tkf/emacs-request][request-deferred]]
+  + (Note that 'request' and 'request-deferred' are in the same repository,
+    but provided as different packages)
++ [[https://github.com/kiwanami/emacs-deferred][deferred]]
+  + It's dependency of request-deferred, but also used in misskey.el
+
+** Usage
+all API calls are ~deferred~. That means, you have to use ~deferred:$~
+and ~deferred:nextc~ to retrive API result. For information about
+deferred, please look into [[https://github.com/kiwanami/emacs-deferred/tree/master][its own README]].
+
+API design of this library is unstable yet, so things might be changed
+in the near future. It's not recommended to use this as library yet.
+
+** Examples
+*** Examine userId of user in same instance
+Try to get UserId of "cj_bc_sd@misskey.io"(which is my acc):
+
+#+begin_src elisp
+  (require 'misskey)
+  (require 'deferred)
+
+  (deferred:$
+    (misskey/api/users/show (make-misskey/misskeyEnv :host "misskey.io")
+                            ;; If `:host' key is omitted, it's assumed to be local, which is misskey.io in this case
+                            '(:username "cj_bc_sd"))
+    (deferred:nextc it
+      (lambda (res)
+        (message "UserID of cj_bc_sd@misskey.io is %s" (plist-get res :id)))))
+#+end_src
+
+*** Examine userId of user in different instance
+Try to get UserId of "cj_bc_sd@misskey.neos.love"(which is my 2nd acc):
+
+#+begin_src elisp
+  (require 'misskey)
+  (require 'deferred)
+
+  (deferred:$
+    (misskey/api/users/show (make-misskey/misskeyEnv :host "misskey.io")
+                            ;; Now you should explictly specify `:host' key
+                            '(:username "cj_bc_sd" :host "misskey.neos.love"))
+    (deferred:nextc it
+      (lambda (res)
+        (message "UserID of cj_bc_sd@misskey.neos.love is %s" (plist-get res :id)))))
+#+end_src

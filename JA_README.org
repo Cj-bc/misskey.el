@@ -1,0 +1,21 @@
+[[file:README.org][English]]
+
+*まだ開発途中です。不安定ですので、実用には向かないかもしれません*
+
+* misskey.el -- Elisp用 Misskey APIライブラリ
+** インストール
+** 使い方
+全てのAPI呼び出しは ~deferred~ オブジェクトを返します。そのため、
+~deferred:$~ や ~deferred:nextc~ 等を利用してAPI呼び出しの結果を取得す
+る必要があります。deferred関連の使い方について詳しくは、 [[https://github.com/kiwanami/emacs-deferred/tree/master][deferred自体のREADME]]
+を参照してください。
+
+
+このライブラリ自体のAPIデザインはまだ固まりきっていないため、将来的に
+変更される可能性があります。まだライブラリとして使用するのは推奨されて
+いません。
+
+** Examples
+コードを複数箇所に置くと後の更新忘れが発生しそうなので、
+[[file:README.org][英語版のREADME]]を参照してください。
+
