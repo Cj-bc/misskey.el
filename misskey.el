@@ -73,6 +73,25 @@ https://hackage.haskell.org/package/pandoc-types-1.22.2.1/docs/Text-Pandoc-Walk.
 	   (raw (json-read)))
       (misskey/json/walk raw :createdAt '(lambda (d) (iso8601-parse d))))))
 
+(defun misskey/debug/show-deferred-result (d)
+  "[DEBUG-PURPOSE] print and display result of deffered-object D in new buffer.
+It'll split frame to pop up that buffer
+
+usage:
+(misskey/debug/insert-deffered-result
+ (misskey/api/users/show env '(:username \"cj_bc_sd\")))
+→ will 
+"
+  (deferred:nextc d
+    (lambda (result)
+      (let ((buf (get-buffer-create
+		  (generate-new-buffer-name "misskey/debug/show-deferred-result"))))
+	(with-current-buffer buf
+	  (emacs-lisp-mode)
+	  (let ((print-length nil))
+	    (insert (pp result))))
+	(display-buffer buf 'display-buffer-in-side-window)))))
+
 (defun misskey/call-deferred (env path body &optional credential-required)
   "General function to call api. This will return deferred object immediately, and run request asynchronously.
 
