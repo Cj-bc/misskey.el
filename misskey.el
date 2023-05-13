@@ -34,21 +34,26 @@
   (host :type string)
   (token :type string))
 
+;;; ---- Internal functions
+
 (defun misskey/json/walk (obj key func)
   "walk plist and apply FUNC for each occurrence of KEY.
 It assumes OBJ is valid plist.
 
+
+Idea behind this function is coming from pandoc library in Haskell.
+Its document might helps you to understand concept of it:
+https://hackage.haskell.org/package/pandoc-types-1.22.2.1/docs/Text-Pandoc-Walk.html
+
+
 * Examples
 
-Given input:
-(misskey/json/walk
-  (:id \"NOTEID\" :createdAt \"2020-01-01T01:01:01.000Z\"
-   :renote (:id \"RENOTED_NOTE_ID\" :createdAt \"2019-01-01T01:01:01.000Z\"
-            :files [(:createdAt \"2019-01-01T01:01:01.000Z\")]))
-  :createdAt
-)
-output will be:
-
+```
+(misskey/json/walk '(:id 0 :createdAt \"2022-01-01T12:30:10.00Z\"
+			 :renote (:id 1 :createdAt  \"2022-01-01T12:30:10.00Z\"))
+		   :createdAt '(lambda (d) (iso8601-parse d)))
+>> (:id 0 :createdAt (10 30 12 1 1 2022 nil nil 0) :renote (:id 1 :createdAt (10 30 12 1 1 2022 nil nil 0)))
+```
 "
   (cond
    ((plistp obj)
@@ -86,6 +91,8 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
   (path :type string)
   (request-validator :type function))
 
+
+;;; API caller functions
 
 (defun misskey/api/users/show/--validate-request (body)
   "Return t when body is valid, `nil' otherwise.
