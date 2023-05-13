@@ -71,7 +71,8 @@ https://hackage.haskell.org/package/pandoc-types-1.22.2.1/docs/Text-Pandoc-Walk.
   (with-current-buffer (or buf (current-buffer))
     (let* ((json-object-type 'plist)
 	   (raw (json-read)))
-      (misskey/json/walk raw :createdAt '(lambda (d) (iso8601-parse d))))))
+      (misskey/json/walk (misskey/json/walk raw :createdAt #'iso8601-parse)
+			 :updatedAt #'iso8601-parse))))
 
 (defun misskey/debug/show-deferred-result (d)
   "[DEBUG-PURPOSE] print and display result of deffered-object D in new buffer.
