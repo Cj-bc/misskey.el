@@ -68,7 +68,7 @@ output will be:
 	   (raw (json-read)))
       (misskey/json/walk raw :createdAt '(lambda (d) (iso8601-parse d))))))
 
-(defun misskey/call-deferred (env path body)
+(defun misskey/call-deferred (env path body &optional credential-required)
   "General function to call api. This will return deferred object immediately, and run request asynchronously.
 
 ENV should be `misskey/misskeyEnv' struct. PATH should be a string indicating relataive path of the API
@@ -76,7 +76,7 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
   (request-deferred
    (format "https://%s/api/%s" (misskey/misskeyEnv-host env) path)
    :type "POST"
-   :data (json-encode body)
+   :data (json-encode (if credential-required (plist-put body :i (misskey/misskeyEnv-token env)) body))
    :parser 'misskey/json-read
    :headers '(("Content-Type" . "application/json"))
    :error (cl-function (lambda (&key error-thrown &allow-other-keys)
