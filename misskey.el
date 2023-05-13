@@ -59,9 +59,9 @@ https://hackage.haskell.org/package/pandoc-types-1.22.2.1/docs/Text-Pandoc-Walk.
    ((plistp obj)
     (when (plist-member obj key)
       (setq obj (plist-put obj key (funcall func (plist-get obj key)))))
-    (seq-map `(lambda (item) (misskey/json/walk item ,key ,func)) obj))
+    (seq-map `(lambda (item) (misskey/json/walk item ,key (function ,func))) obj))
    ((stringp obj) obj) ;; As string is 'sequence', I have to treat string before testing `sequencep'
-   ((sequencep obj) (seq-map `(lambda (item) (misskey/json/walk item ,key ,func)) obj))
+   ((sequencep obj) (seq-map `(lambda (item) (misskey/json/walk item ,key (function ,func))) obj))
    (t obj)))
 
 (defun misskey/json-read (&optional buf)
