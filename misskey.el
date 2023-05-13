@@ -80,7 +80,7 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
    :parser 'misskey/json-read
    :headers '(("Content-Type" . "application/json"))
    :error (cl-function (lambda (&key error-thrown &allow-other-keys)
-  			 (message "failed to retrive info. (%s)" error-thrown)))
+  			 (message "misskey/call-deferred: (%s)" error-thrown)))))
 
 (cl-defstruct misskeyEndpoint
   (path :type string)
