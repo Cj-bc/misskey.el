@@ -107,7 +107,7 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
    :error (cl-function (lambda (&key error-thrown &allow-other-keys)
   			 (message "misskey/call-deferred: (%s)" error-thrown)))))
 
-(cl-defmacro misskey-api (path &key credential required-params)
+(cl-defmacro misskey-api (path &key credential required-params optional-params)
   "Create misskey/PATH function as misskey-api endpoint.
 PATH is symbol of API endpoint path, such as users/show or users/notes.
 
@@ -121,6 +121,12 @@ one or more of given params (which is represented as 'anyOf' in misskey spec),
 use `anyOf' followed by list.
 
 Either case, element of list are (PARAMETER-NAME . VALIDATOR).
+
+OPTIONAL-PARAMS represents list of optional parameters and their validators.
+Optional parameters are defined as \"keyword arguments\" by using `cl-defun'.
+Unlike REQUIRED-PARAMS, it is simple list, and element of list are
+(PARAMETER-NAME . VALIDATOR). PARAMETER-NAME is directly used as keyword argument,
+ so _do not_ make it keyword (by start with \":\").
 "
   (let* ((path-str (symbol-name path))
 	 (name-sym (intern (format "misskey/api/%s" path-str)))
@@ -135,9 +141,12 @@ Either case, element of list are (PARAMETER-NAME . VALIDATOR).
 	  (cond ((null required-params) t)
 		(is-required-arg-anyOf `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params))))
 		(t `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params)))))
+	 (optional-args
+	  (when optional-params
+	    `(&key ,@(seq-map #'car optional-params))))
 	 (request-body (when required-args
 			 `(list ,(seq-map (lambda (name) `(,(symbol-name name) . ,name)) required-args)))))
-    `(defun ,name-sym (env ,@required-args)
+    `(cl-defun ,name-sym (env ,@required-args ,@optional-args)
        (when ,required-arg-valiator
 	 (deferred:$
 	     (misskey/call-deferred env ,path-str ,request-body ,credential)
