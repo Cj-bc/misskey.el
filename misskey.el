@@ -128,9 +128,6 @@ use `anyOf' followed by list.
 Either case, element of list are (PARAMETER-NAME . VALIDATOR).
 "
   (let* ((path-str (symbol-name path))
-	 (func-body `(deferred:$
-		       (misskey/call-deferred env ,path-str body ,credential)
-		       (deferred:nextc it 'request-response-data)))
 	 (name-sym (intern (format "misskey/api/%s" path-str)))
 
 	 ;; If `:required-params' starts with `anyOf' symbol, I have to receive required parameters as
@@ -145,7 +142,9 @@ Either case, element of list are (PARAMETER-NAME . VALIDATOR).
 	 )
     `(defun ,name-sym (env ,@required-args)
        (when ,required-arg-valiator
-	  ,func-body))))
+	 (deferred:$
+	     (misskey/call-deferred env ,path-str body ,credential)
+	     (deferred:nextc it 'request-response-data))))))
 
 ;;; API caller functions
 
