@@ -145,7 +145,7 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 	  (when optional-params (seq-map #'car optional-params)))
 	 (optional-arg-validator
 	  (if (null optional-args) '(t)
-	    (seq-map '(lambda (x) `(,(cdr x) ,(car x))) optional-params)))
+	    (seq-map '(lambda (x) `(or (null ,(car x)) (,(cdr x) ,(car x)))) optional-params)))
 	 (request-body (when (or required-args optional-params)
 			 (seq-map (lambda (name) `(,(symbol-name name) . ,name))
 					  `(,@required-args ,@optional-args)))))
