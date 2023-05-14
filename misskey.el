@@ -112,48 +112,41 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
   (request-validator :type function))
 
 
+(cl-defmacro misskey-api (path &key credential request-validate)
+  "Create misskey/PATH function as misskey-api endpoint.
+PATH is symbol of API endpoint path, such as users/show or users/notes.
+
+If API endpoint requires authentication, set CREDENTIAL non-nil.
+If present, REQUEST-VALIDATE should be function that receive BODY and return
+non-nil when given BODY is valid body for API endpoint PATH.
+"
+  (let* ((path-str (symbol-name path))
+	 (func-body `(deferred:$
+		       (misskey/call-deferred env ,path-str body ,credential)
+		       (deferred:nextc it 'request-response-data)))
+	 (name-sym (intern (format "misskey/api/%s" path-str))))
+    `(defun ,name-sym (env body)
+       ,(if request-validate
+	    `(when ,request-validate
+	       ,func-body)
+	  func-body))))
+
 ;;; API caller functions
 
-(defun misskey/api/users/show/--validate-request (body)
-  "Return t when body is valid, `nil' otherwise.
-This allows other keys existence (Won't return nil even if there's some keys that aren't recognized)
+(misskey-api users/show
+	     :credential nil
+	     :request-validate
+	     (lambda (body)
+	       (or (stringp (plist-get body :userId))
+		   (and (sequencep (plist-get body :userIds))
+			(seq-every-p 'stringp (plist-get body :userIds)))
+		   (and (stringp (plist-get body :username))
+			(string-or-null-p (plist-get body :host))))))
 
-Valid bodies are:
-- (:userId \"USERID\")
-- (:userIds (\"USERID\" \"USERID2\" ...))
-- (:username \"USERNAME\")
-- (:username \"USERNAME\" :host \"HOSTNAME\")
-"
-  (or (stringp (plist-get body :userId))
-      (and (sequencep (plist-get body :userIds))
-	   (seq-every-p 'stringp (plist-get body :userIds)))
-      (and (stringp (plist-get body :username))
-	   (string-or-null-p (plist-get body :host)))))
+(misskey-api notes/local-timeline :credential nil)
+(misskey-api notes/create :credential t)
+(misskey-api users/notes :credential nil)
 
-(defun misskey/api/users/show (env body)
-  "call users/show API. It'll return deferred object when succeed to
-call API properly, nil otherwise.
-
-https://misskey-hub.net/docs/api/endpoints/users/show.html"
-  (when (misskey/api/users/show/--validate-request body)
-    (deferred:$
-      (misskey/call-deferred env "users/show" body)
-      (deferred:nextc it 'request-response-data))))
-
-(defun misskey/api/notes/local-timeline (env body)
-  (deferred:$
-    (misskey/call-deferred env "notes/local-timeline" body)
-    (deferred:nextc it 'request-response-data)))
-
-(defun misskey/api/notes/create (env body)
-  (deferred:$
-    (misskey/call-deferred env "notes/create" body t)
-    (deferred:nextc it 'request-response-data)))
-
-(defun misskey/api/users/notes (env body)
-  (deferred:$
-    (misskey/call-deferred env "users/notes" body)
-    (deferred:nextc it 'request-response-data)))
 
 (provide 'misskey)
 ;;; misskey.el ends here
