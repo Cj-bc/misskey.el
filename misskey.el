@@ -128,17 +128,19 @@ Either case, element of list are (PARAMETER-NAME . VALIDATOR).
 	 ;; If `:required-params' starts with `anyOf' symbol, I have to receive required parameters as
 	 ;; simple list and append some code to validate arguments
 	 (is-required-arg-anyOf (and (sequencep required-params) (eq (car required-params) 'anyOf)))
-	 (required-args (if is-required-arg-anyOf (seq-map #'car (cdr required-params))
-			  (seq-map #'car required-params)))
+	 (required-args (cond ((null required-params) '())
+			      (is-required-arg-anyOf (seq-map #'car (cdr required-params)))
+			      (t (seq-map #'car required-params))))
 	 (required-arg-valiator
-	  (if is-required-arg-anyOf
-	      `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params)))
-	    `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params))))
-	 (request-body (seq-map (lambda (name) `(,(symbol-name name) . ,name)) required-args)))
+	  (cond ((null required-params) t)
+		(is-required-arg-anyOf `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params))))
+		(t `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params)))))
+	 (request-body (when required-args
+			 `(list ,(seq-map (lambda (name) `(,(symbol-name name) . ,name)) required-args)))))
     `(defun ,name-sym (env ,@required-args)
        (when ,required-arg-valiator
 	 (deferred:$
-	     (misskey/call-deferred env ,path-str (list ,@request-body) ,credential)
+	     (misskey/call-deferred env ,path-str ,request-body ,credential)
 	     (deferred:nextc it 'request-response-data))))))
 
 ;;; API caller functions
