@@ -147,8 +147,8 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 	  (if (null optional-args) '(t)
 	    (seq-map '(lambda (x) `(or (null ,(car x)) (,(cdr x) ,(car x)))) optional-params)))
 	 (request-body (when (or required-args optional-params)
-			 (seq-map (lambda (name) `(,(symbol-name name) . ,name))
-					  `(,@required-args ,@optional-args)))))
+			 `(quote ,(seq-map (lambda (name) `(,(symbol-name name) . ,name))
+					  `(,@required-args ,@optional-args))))))
     `(cl-defun ,name-sym (env ,@required-args ,@(when optional-args `(&key ,@optional-args)))
        ;; Even though I can remove 'when' clause technically when no argument is given,
        ;; I intentionally not to do so because that would make code more complicated.
