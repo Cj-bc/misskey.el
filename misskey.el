@@ -138,16 +138,24 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 			      (is-required-arg-anyOf (seq-map #'car (cdr required-params)))
 			      (t (seq-map #'car required-params))))
 	 (required-arg-valiator
-	  (cond ((null required-params) t)
+	  (cond ((null required-params) '(t))
 		(is-required-arg-anyOf `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params))))
-		(t `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params)))))
+		(t (seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params))))
 	 (optional-args
 	  (when optional-params (seq-map #'car optional-params)))
+	 (optional-arg-validator
+	  (if (null optional-args) '(t)
+	    (seq-map '(lambda (x) `(,(cdr x) ,(car x))) optional-params)))
 	 (request-body (when (or required-args optional-params)
 			 (seq-map (lambda (name) `(,(symbol-name name) . ,name))
 					  `(,@required-args ,@optional-args)))))
     `(cl-defun ,name-sym (env ,@required-args ,@(when optional-args `(&key ,@optional-args)))
-       (when ,required-arg-valiator
+       ;; Even though I can remove 'when' clause technically when no argument is given,
+       ;; I intentionally not to do so because that would make code more complicated.
+       ;; As a result, generated code sometimes have something like:
+       ;;
+       ;; (when t t (deferred:$ ...))
+       (when (and ,@required-arg-valiator ,@optional-arg-validator)
 	 (deferred:$
 	     (misskey/call-deferred env ,path-str ,request-body ,credential)
 	     (deferred:nextc it 'request-response-data))))))
