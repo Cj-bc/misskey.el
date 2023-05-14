@@ -107,11 +107,6 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
    :error (cl-function (lambda (&key error-thrown &allow-other-keys)
   			 (message "misskey/call-deferred: (%s)" error-thrown)))))
 
-(cl-defstruct misskeyEndpoint
-  (path :type string)
-  (request-validator :type function))
-
-
 (cl-defmacro misskey-api (path &key credential required-params)
   "Create misskey/PATH function as misskey-api endpoint.
 PATH is symbol of API endpoint path, such as users/show or users/notes.
