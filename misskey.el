@@ -112,36 +112,49 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
   (request-validator :type function))
 
 
-(cl-defmacro misskey-api (path &key credential request-validate)
+(cl-defmacro misskey-api (path &key credential required-params)
   "Create misskey/PATH function as misskey-api endpoint.
 PATH is symbol of API endpoint path, such as users/show or users/notes.
 
 If API endpoint requires authentication, set CREDENTIAL non-nil.
-If present, REQUEST-VALIDATE should be function that receive BODY and return
-non-nil when given BODY is valid body for API endpoint PATH.
+
+REQUIRED-PARAMS represents list of required parameters and their validators.
+There're two way to specify parameters: simple list or list following `anyOf'.
+
+If endpoint requires all of given params, use simple list. If endpoint requires
+one or more of given params (which is represented as 'anyOf' in misskey spec),
+use `anyOf' followed by list.
+
+Either case, element of list are (PARAMETER-NAME . VALIDATOR).
 "
   (let* ((path-str (symbol-name path))
 	 (func-body `(deferred:$
 		       (misskey/call-deferred env ,path-str body ,credential)
 		       (deferred:nextc it 'request-response-data)))
-	 (name-sym (intern (format "misskey/api/%s" path-str))))
-    `(defun ,name-sym (env body)
-       ,(if request-validate
-	    `(when ,request-validate
-	       ,func-body)
-	  func-body))))
+	 (name-sym (intern (format "misskey/api/%s" path-str)))
+
+	 ;; If `:required-params' starts with `anyOf' symbol, I have to receive required parameters as
+	 ;; simple list and append some code to validate arguments
+	 (is-required-arg-anyOf (and (sequencep required-params) (eq (car required-params) 'anyOf)))
+	 (required-args (if is-required-arg-anyOf (seq-map #'car (cdr required-params))
+			  (seq-map #'car required-params)))
+	 (required-arg-valiator
+	  (if is-required-arg-anyOf
+	      `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params)))
+	    `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params))))
+	 )
+    `(defun ,name-sym (env ,@required-args)
+       (when ,required-arg-valiator
+	  ,func-body))))
 
 ;;; API caller functions
 
 (misskey-api users/show
 	     :credential nil
-	     :request-validate
-	     (lambda (body)
-	       (or (stringp (plist-get body :userId))
-		   (and (sequencep (plist-get body :userIds))
-			(seq-every-p 'stringp (plist-get body :userIds)))
-		   (and (stringp (plist-get body :username))
-			(string-or-null-p (plist-get body :host))))))
+	     :required-params
+	     (anyOf (userId . stringp)
+		    (userIds . (lambda (x) (and (sequencep x) (seq-every-p stringp x))))
+		    (username . string)))
 
 (misskey-api notes/local-timeline :credential nil)
 (misskey-api notes/create :credential t)
