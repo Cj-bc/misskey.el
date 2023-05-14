@@ -139,11 +139,11 @@ Either case, element of list are (PARAMETER-NAME . VALIDATOR).
 	  (if is-required-arg-anyOf
 	      `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params)))
 	    `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params))))
-	 )
+	 (request-body (seq-map (lambda (name) `(,(symbol-name name) . ,name)) required-args)))
     `(defun ,name-sym (env ,@required-args)
        (when ,required-arg-valiator
 	 (deferred:$
-	     (misskey/call-deferred env ,path-str body ,credential)
+	     (misskey/call-deferred env ,path-str (quote ,request-body) ,credential)
 	     (deferred:nextc it 'request-response-data))))))
 
 ;;; API caller functions
