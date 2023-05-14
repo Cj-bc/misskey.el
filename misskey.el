@@ -143,7 +143,7 @@ Either case, element of list are (PARAMETER-NAME . VALIDATOR).
     `(defun ,name-sym (env ,@required-args)
        (when ,required-arg-valiator
 	 (deferred:$
-	     (misskey/call-deferred env ,path-str (quote ,request-body) ,credential)
+	     (misskey/call-deferred env ,path-str (list ,@request-body) ,credential)
 	     (deferred:nextc it 'request-response-data))))))
 
 ;;; API caller functions
