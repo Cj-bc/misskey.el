@@ -142,11 +142,11 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 		(is-required-arg-anyOf `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params))))
 		(t `(and ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params)))))
 	 (optional-args
-	  (when optional-params
-	    `(&key ,@(seq-map #'car optional-params))))
-	 (request-body (when required-args
-			 `(list ,(seq-map (lambda (name) `(,(symbol-name name) . ,name)) required-args)))))
-    `(cl-defun ,name-sym (env ,@required-args ,@optional-args)
+	  (when optional-params (seq-map #'car optional-params)))
+	 (request-body (when (or required-args optional-params)
+			 (seq-map (lambda (name) `(,(symbol-name name) . ,name))
+					  `(,@required-args ,@optional-args)))))
+    `(cl-defun ,name-sym (env ,@required-args ,@(when optional-args `(&key ,@optional-args)))
        (when ,required-arg-valiator
 	 (deferred:$
 	     (misskey/call-deferred env ,path-str ,request-body ,credential)
