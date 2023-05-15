@@ -173,7 +173,7 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 	     :credential nil
 	     :required-params
 	     (anyOf (userId . stringp)
-		    (userIds . (lambda (x) (and (sequencep x) (seq-every-p stringp x))))
+		    (userIds . (lambda (x) (and (sequencep x) (seq-every-p 'stringp x))))
 		    (username . stringp)))
 
 (misskey-api notes/local-timeline :credential nil)
