@@ -196,8 +196,27 @@ Valid strings are:
 		    (username . stringp)))
 
 (misskey-api notes/local-timeline :credential nil)
-(misskey-api notes/create :credential t)
-(misskey-api users/notes :credential nil)
+(misskey-api notes/create :credential t
+	     :required-params
+	     (anyOf
+	      (text . stringp)
+	      (fileIds . '(lambda (l) (and (sequencep l) (seq-every-p 'stringp l))))
+	      (mediaIds . '(lambda (l) (and (sequencep l) (seq-every-p 'stringp l))))
+	      (renoteId . stringp))
+	     :optional-params
+	     ((visibility . misskey-visibility-p)
+	      (visibleUserIds . '(lambda (l) (and (sequencep l) (seq-every-p 'stringp l))))
+	      (cw . stringp) (localOnly . booleanp) (noExtractMentions . booleanp)
+	      (noExtractHashtags . booleanp) (noExtractEmojis . booleanp)
+	      (replyId . stringp) (channelId . stringp)))
+
+(misskey-api users/notes
+	     :credential nil
+	     :required-params
+	     ((userId . stringp))
+	     :optional-params
+	     ((includeReplies . booleanp)
+	      (limit . integerp)))
 
 
 (provide 'misskey)
