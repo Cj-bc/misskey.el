@@ -139,7 +139,7 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 			      (t (seq-map #'car required-params))))
 	 (required-arg-valiator
 	  (cond ((null required-params) '(t))
-		(is-required-arg-anyOf `(or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params))))
+		(is-required-arg-anyOf `((or ,@(seq-map '(lambda (x) `(,(cdr x) ,(car x))) (cdr required-params)))))
 		(t (seq-map '(lambda (x) `(,(cdr x) ,(car x))) required-params))))
 	 (optional-args
 	  (when optional-params (seq-map #'car optional-params)))
