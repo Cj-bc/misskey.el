@@ -167,6 +167,25 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 	     (misskey/call-deferred env ,path-str ,request-body ,credential)
 	     (deferred:nextc it 'request-response-data))))))
 
+
+;;; Predicates
+
+(defun misskey-visibility-p (object)
+  "Return t if OBJECT is valid string represents visibility.
+Valid strings are:
+
+- \"public\"
+- \"home\"
+- \"followers\"
+- \"specified\"
+"
+  (and (stringp object)
+   (or (string-equal object "public")
+       (string-equal object "home")
+       (string-equal object "followers")
+       (string-equal object "specified"))))
+
+
 ;;; API caller functions
 
 (misskey-api users/show
