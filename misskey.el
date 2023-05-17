@@ -150,7 +150,7 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 			 (let ((keys (seq-map
 				      '(lambda (name)
 					 `(list ,(intern (format ":%s" (symbol-name name))) ,name))
-				      `(list ,@required-args ,@optional-args))
+				      `(,@required-args ,@optional-args))
 				))
 			 `(seq-reduce
 			   (lambda (acc name)
