@@ -82,5 +82,37 @@
 			(deferred:nextc it 'request-response-data))))
 		 )))
 
+(ert-deftest misskey-api-test/required-and-optional-params ()
+  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp)) :optional-params ((bar . integerp))))
+		 '(cl-defun misskey/api/test-api (env foo &key bar)
+		    (when (and (stringp foo) (or (null bar) (integerp bar)))
+		      (deferred:$
+			(misskey/call-deferred env "test-api"
+					       (seq-reduce (lambda (acc name)
+							     (if (seq-elt name 1) `(,@acc ,@name) acc))
+							   (list (list :foo foo) (list :bar bar)) '()) nil)
+			(deferred:nextc it 'request-response-data))))
+		 ))
+  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp) (baz . numberp)) :optional-params ((bar . integerp))))
+		 '(cl-defun misskey/api/test-api (env foo baz &key bar)
+		    (when (and (stringp foo) (numberp baz) (or (null bar) (integerp bar)))
+		      (deferred:$
+		  	(misskey/call-deferred env "test-api"
+		  			       (seq-reduce (lambda (acc name)
+		  					     (if (seq-elt name 1) `(,@acc ,@name) acc))
+		  					   (list (list :foo foo) (list :baz baz) (list :bar bar)) '()) nil)
+		  	(deferred:nextc it 'request-response-data))))
+		 ))
+  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp) ) :optional-params ((bar . integerp) (baz . numberp))))
+		 '(cl-defun misskey/api/test-api (env foo &key bar baz)
+		    (when (and (stringp foo)  (or (null bar) (integerp bar)) (or (null baz) (numberp baz)))
+		      (deferred:$
+		  	(misskey/call-deferred env "test-api"
+		  			       (seq-reduce (lambda (acc name)
+		  					     (if (seq-elt name 1) `(,@acc ,@name) acc))
+		  					   (list (list :foo foo) (list :bar bar) (list :baz baz)) '()) nil)
+		  	(deferred:nextc it 'request-response-data))))
+		 )))
+
 (provide 'misskey.ert)
 ;;; misskey.ert.el ends here
