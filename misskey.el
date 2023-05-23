@@ -185,6 +185,18 @@ Valid strings are:
        (string-equal object "followers")
        (string-equal object "specified"))))
 
+(defun misskey-id-p (object)
+  "Return t if OBJECT is valid misskey id.
+
+Official: https://github.com/misskey-dev/misskey/blob/develop/packages/backend/src/models/id.ts
+"
+  (and (stringp object)
+       (length= object 32)))
+
+(defun misskey-sequence-of-id-p (object)
+  "Return t if OBJECT is sequence of valid misskey id "
+  (and (sequencep object)
+       (seq-every-p 'misskey-id-p object)))
 
 ;;; API caller functions
 
@@ -192,7 +204,7 @@ Valid strings are:
 	     :credential nil
 	     :required-params
 	     (anyOf (userId . stringp)
-		    (userIds . (lambda (x) (and (sequencep x) (seq-every-p 'stringp x))))
+		    (userIds . misskey-sequence-of-id-p)
 		    (username . stringp)))
 
 (misskey-api notes/local-timeline :credential nil)
@@ -200,12 +212,12 @@ Valid strings are:
 	     :required-params
 	     (anyOf
 	      (text . stringp)
-	      (fileIds . '(lambda (l) (and (sequencep l) (seq-every-p 'stringp l))))
-	      (mediaIds . '(lambda (l) (and (sequencep l) (seq-every-p 'stringp l))))
+	      (fileIds . misskey-sequence-of-id-p)
+	      (mediaIds . misskey-sequence-of-id-p)
 	      (renoteId . stringp))
 	     :optional-params
 	     ((visibility . misskey-visibility-p)
-	      (visibleUserIds . '(lambda (l) (and (sequencep l) (seq-every-p 'stringp l))))
+	      (visibleUserIds . misskey-sequence-of-id-p)
 	      (cw . stringp) (localOnly . booleanp) (noExtractMentions . booleanp)
 	      (noExtractHashtags . booleanp) (noExtractEmojis . booleanp)
 	      (replyId . stringp) (channelId . stringp)))
