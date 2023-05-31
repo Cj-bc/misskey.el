@@ -27,6 +27,21 @@
 (require 'misskey)
 (require 'deferred)
 
+(ert-deftest misskey/json/walk-test/do-nothing-for-nonexist-key ()
+  "Do nothing if given KEY isn't in OBJ"
+  (should (equal (misskey/json/walk '() :nonexist 'id)
+	  '()))
+  (should (equal (misskey/json/walk '(:foo "a") :nonexist 'id)
+	  '(:foo "a"))))
+
+(ert-deftest misskey/json/walk-test/keep-unspecified-keys-unchanged ()
+  "Keep unspecified keys as is"
+  (should (equal (misskey/json/walk '(:foo 1 :bar 2 :baz 3) :foo '1+)
+	  '(:foo 2 :bar 2 :baz 3)))
+  (should (equal (misskey/json/walk '(:foo 1 :bar 2 :baz 3) :baz '1+)
+	  '(:foo 1 :bar 2 :baz 4))))
+
+
 (ert-deftest misskey-api-test-no-params ()
   "No :optional-params :required-params should give `nil' as body"
   (should (equal (macroexpand-1 '(misskey-api test-api))
