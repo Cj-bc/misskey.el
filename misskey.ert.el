@@ -41,6 +41,23 @@
   (should (equal (misskey/json/walk '(:foo 1 :bar 2 :baz 3) :baz '1+)
 	  '(:foo 1 :bar 2 :baz 4))))
 
+(ert-deftest misskey/json-read-test/createdAt-conversion ()
+  ":createdAt should be \"decoded\" by `decode-time'"
+  (should
+   (equal (with-temp-buffer
+	    (insert (json-encode '(:createdAt "2023-05-31T12:08:47Z")))
+	    (goto-char (point-min))
+	    (misskey/json-read))
+	  '(:createdAt (47 8 12 31 5 2023 nil nil 0)))))
+
+(ert-deftest misskey/json-read-test/updatedAt-conversion ()
+  ":updatedAt should be \"decoded\" by `decode-time'"
+  (should
+   (equal (with-temp-buffer
+	    (insert (json-encode '(:updatedAt "2023-05-31T12:08:47Z")))
+	    (goto-char (point-min))
+	    (misskey/json-read))
+	  '(:updatedAt (47 8 12 31 5 2023 nil nil 0)))))
 
 (ert-deftest misskey-api-test-no-params ()
   "No :optional-params :required-params should give `nil' as body"
