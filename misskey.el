@@ -98,7 +98,7 @@ is equivalent to:
 "
   (when (= (% (seq-length keys) 2) 0)
     (cl-loop for pair in (seq-partition keys 2)
-  	  do (setq obj (misskey/json-walk obj (elt 0 pair) (elt 1 pair)))
+  	  do (setq obj (misskey/json/walk obj (elt pair 0) (elt pair 1)))
   	  finally return obj)))
 
 (defun misskey/json-read (&optional buf)
