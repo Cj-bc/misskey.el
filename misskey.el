@@ -27,6 +27,7 @@
 
 (require 'deferred)
 (require 'request-deferred)
+(require 'cl-macs)
 (require 'seq)
 
 (cl-defstruct misskey/misskeyEnv
