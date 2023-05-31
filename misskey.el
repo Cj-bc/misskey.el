@@ -64,6 +64,42 @@ https://hackage.haskell.org/package/pandoc-types-1.22.2.1/docs/Text-Pandoc-Walk.
    ((sequencep obj) (seq-map `(lambda (item) (misskey/json/walk item ,key (function ,func))) obj))
    (t obj)))
 
+(defun misskey/json/walks (obj &rest keys)
+  "`misskey/json/walk' wrapper to support multiple KEY FUNC pairs.
+
+KEYS should be list, and elements are (KEY FUNC KEY2 FUNC2 KEY3 FUNC3...) for `misskey/json/walk'.
+Therefore, length of KEYS should be multiple of 2. If not, it will return `nil'.
+
+# Example:
+
+(misskey/json/walks obj
+  :foo a
+  :bar b)
+
+is equivalent to:
+
+(misskey/json/walk
+  (misskey/json/walk obj :foo a)
+  :bar b)
+
+
+# Real world example:
+
+(misskey/json/walks obj
+  :createdAt #'iso8601-parse
+  :updatedAt #'iso8601-parse)
+
+is equivalent to:
+
+(misskey/json/walk
+  (misskey/json/walk obj :createdAt #'iso8601-parse)
+  #'iso8601-parse)
+"
+  (when (= (% (seq-length keys) 2) 0)
+    (cl-loop for pair in (seq-partition keys 2)
+  	  do (setq obj (misskey/json-walk obj (elt 0 pair) (elt 1 pair)))
+  	  finally return obj)))
+
 (defun misskey/json-read (&optional buf)
   "`json-read' with some modification for ease.
 
