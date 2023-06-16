@@ -235,6 +235,33 @@ Official: https://github.com/misskey-dev/misskey/blob/develop/packages/backend/s
   (and (sequencep object)
        (seq-every-p 'misskey-id-p object)))
 
+(defun misskey-decoded-time-p (object)
+  "Return t if OBJECT is the same as result of `decode-time'."
+  (and (sequencep object)
+       (length= object 6)
+       (let ((second (decoded-time-second object))
+ 	     (minutes (decoded-time-minute object))
+ 	     (hour (decoded-time-hour object))
+ 	     (day (decoded-time-day object))
+ 	     (month (decoded-time-month object))
+ 	     (year (decoded-time-year object))
+ 	     (dow (decoded-time-weekday object))
+ 	     (dst (decoded-time-dst object))
+ 	     (utcoff (decoded-time-zone object)))
+ 	 (and (or (and (constp second) (length= second 2) (seq-every-p second 'integerp))
+	       (and (integerp second) (>= second 0) (<= second 60)))
+ 	      (integerp minutes) (>= minutes 0) (<= minutes 59)
+ 	      (integerp hour) (>= hour 0) (<= hour 23)
+ 	      (integerp day) (>= day 1) (<= day 31)
+ 	      (integerp month) (>= month 1) (<= month 12)
+ 	      ;; "YEAR" is written as 'typically greater than 1900' in
+ 	      ;; document, but I thought smaller values are still valid.
+ 	      (integerp year) (>= year 1)
+ 	      (integerp dow) (>= dow 0) (<= dow 6)
+ 	      (or (eq dst t) (eq dst nil) (eq dst -1))
+ 	      (integerp utcoff)))))
+
+
 ;;; API caller functions
 
 (misskey-api users/show
