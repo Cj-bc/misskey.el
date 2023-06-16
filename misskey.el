@@ -107,6 +107,7 @@ is equivalent to:
 1. Convert timestamp string into Lisp timestamp"
   (with-current-buffer (or buf (current-buffer))
     (let* ((json-object-type 'plist)
+	   (json-false :json-false)
 	   (raw (json-read)))
       (misskey/json/walk (misskey/json/walk raw :createdAt #'iso8601-parse)
 			 :updatedAt #'iso8601-parse))))
