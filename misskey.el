@@ -294,6 +294,50 @@ Official: https://github.com/misskey-dev/misskey/blob/develop/packages/backend/s
 	     ((includeReplies . booleanp)
 	      (limit . integerp)))
 
+(misskey-api notes/children :credential nil
+	     :required-params
+	     ((noteId . misskey-id-p))
+	     :optional-params
+	     ((limit . integerp)
+	      (sinceId . misskey-id-p)
+	      (untilId . misskey-id-p)))
+
+(misskey-api notes/conversation :credential nil
+	     :required-params
+	     ((noteId . misskey-id-p))
+	     :optional-params
+	     ((limit . integerp)
+	      (offset . integerp)))
+
+(misskey-api notes/delete :credential t
+	     :required-params ((noteId . misskey-id-p)))
+
+(misskey-api notes/favorites/create :credential t
+	     :required-params ((noteId . misskey-id-p)))
+
+(misskey-api notes/favorites/delete :credential t
+	     :required-params ((noteId . misskey-id-p)))
+
+(misskey-api notes/featured :credential nil
+	     :optional-params
+	     ((limit . integerp)
+	      (offset . integerp)))
+(misskey-api notes/global-timeline :credential nil
+	     :optional-params
+	     ((withFiles . booleanp)
+	      (limit . integerp)
+	      (sinceId . misskey-id-p) (untilId . misskey-id-p)
+	      (sinceDate . integerp) (untilDate . integerp)))
+
+
+(misskey-api notes/timeline :credential t
+	     :optional-params
+	     ((limit . integerp) (sinceId . stringp) (untilId . stringp)
+	      (sinceData . misskey-decoded-time-p) (untilData . misskey-decoded-time-p)
+	      (includeMyRenotes . booleanp) (includeMyRenotedMyNotes . booleanp) (includeLocalRenotes . booleanp)
+	      (withFiles . booleanp)))
+
+
 
 (provide 'misskey)
 ;;; misskey.el ends here
