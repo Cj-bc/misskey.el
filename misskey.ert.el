@@ -41,6 +41,11 @@
   (should (equal (misskey/json/walk '(:foo 1 :bar 2 :baz 3) :baz '1+)
 	  '(:foo 1 :bar 2 :baz 4))))
 
+(ert-deftest misskey/json/walks-test ()
+  "walks should apply each KEY & FUNC accordingly"
+  (equal (misskey/json/walks '(:foo 1 :bar 2 :baz 3) :foo '1+ :baz '1+)
+	 '(:foo 2 :bar 2 :baz 4)))
+
 (ert-deftest misskey/json-read-test/createdAt-conversion ()
   ":createdAt should be \"decoded\" by `decode-time'"
   (should
