@@ -297,6 +297,7 @@ If response is invalid, this function will throw error.
   ;; as I need to receive and return value.
   (let ((result (request-response-data
 		 (request (format "https://%s/api/miauth/%s/check" host session-id)
+		   :type "POST"
 		   :parser 'misskey/json-read
 		   :sync t
 		   :timeout (or timeout 3)))))
