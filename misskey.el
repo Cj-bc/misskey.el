@@ -274,7 +274,7 @@ application access."
   (let* ((sessionId (org-id-uuid))
 	(nameQ (when name (format "name=%s" name)))
 	(iconQ (when icon-url (format "icon=%s" icon-url)))
-	(permissionsQ (when permissions (format "permission=%s" permissions)))
+	(permissionsQ (when permissions (format "permission=%s" (string-join permissions ","))))
 	(queries (string-join `("?" ,(string-join (seq-filter #'identity (list nameQ iconQ permissionsQ)) "&")))))
     (list :url (format "https://%s/miauth/%s%s" host sessionId queries)
 	  :session-id sessionId)))
