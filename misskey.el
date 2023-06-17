@@ -29,6 +29,7 @@
 (require 'request-deferred)
 (require 'cl-macs)
 (require 'seq)
+(require 'org-id) ; Used for generating session-id
 
 (cl-defstruct misskey/misskeyEnv
   "Contains configurations for API call."
@@ -270,7 +271,7 @@ Official: https://github.com/misskey-dev/misskey/blob/develop/packages/backend/s
   "One of endpoint for Miauth. This will generate sessionID and returns it along with URL user should access.
 In order to accomplish miauth, you should call `misskey/api/miauth/check' with given sessionID after user confirmed
 application access."
-  (let* ((sessionId "TESTTOKEN")
+  (let* ((sessionId (org-id-uuid))
 	(nameQ (when name (format "name=%s" name)))
 	(iconQ (when icon-url (format "icon=%s" icon-url)))
 	(permissionsQ (when permissions (format "permission=%s" permissions)))
