@@ -265,6 +265,45 @@ Official: https://github.com/misskey-dev/misskey/blob/develop/packages/backend/s
 
 ;;; API caller functions
 
+;; TODO: Find good session-id generator
+(cl-defun misskey/api/miauth/initiate (host &key name icon-url permissions)
+  "One of endpoint for Miauth. This will generate sessionID and returns it along with URL user should access.
+In order to accomplish miauth, you should call `misskey/api/miauth/check' with given sessionID after user confirmed
+application access."
+  (let* ((sessionId "TESTTOKEN")
+	(nameQ (when name (format "name=%s" name)))
+	(iconQ (when icon-url (format "icon=%s" icon-url)))
+	(permissionsQ (when permissions (format "permission=%s" permissions)))
+	(queries (string-join `("?" ,(string-join (seq-filter #'identity (list nameQ iconQ permissionsQ)) "&")))))
+    (list :url (format "https://%s/miauth/%s%s" host sessionId queries)
+	  :session-id sessionId)))
+
+(defun misskey/api/miauth/check (host session-id &rest timeout)
+  "Check miauth and returns plist of result.
+
+Please call `misskey/api/miauth/initiate' before call this, and retrive SESSION-ID.
+HOST should be instance HOST(e.g. \"misskey.io\".)
+SESSION-ID should be one that is returned from `misskey/api/miauth/initiate'.
+
+Result will be plist of two keys if miauth succeeded:
++ `:token' contains actual token to use
++ `:user' contains user information of that token.
+
+If miauth failed(i.e. \"{ok: false}\"), this function will return nil.
+If response is invalid, this function will throw error.
+"
+  ;; I'm sure *it is highly discouraged to use sync*, but I have no choice
+  ;; as I need to receive and return value.
+  (let ((result (request-response-data
+		 (request (format "https://%s/api/miauth/%s/check" host session-id)
+		   :parser 'misskey/json-read
+		   :sync t
+		   :timeout (or timeout 3)))))
+    (pcase (plist-get result :ok)
+      ('t `(:token ,(plist-get result :token) :user ,(plist-get result :user)))
+      (:json-false nil)
+      (_ (error "misskey/api/miauth/check: invalid miauth response.")))))
+
 (misskey-api users/show
 	     :credential nil
 	     :required-params
