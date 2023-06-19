@@ -264,6 +264,65 @@ Official: https://github.com/misskey-dev/misskey/blob/develop/packages/backend/s
  	      (integerp utcoff)))))
 
 
+(defun misskey-permission-p (object)
+  "Return t if OBJECT is valid permission string.
+
+Official Reference: https://misskey-hub.net/docs/api/permission.html
+
+Valid strings are:
+- \"read:account\"
+- \"write:account\"
+- \"read:blocks\"
+- \"write:blocks\"
+- \"read:drive\"
+- \"write:drive\"
+- \"read:favorites\"
+- \"write:favorites\"
+- \"read:following\"
+- \"write:following\"
+- \"read:messaging\"
+- \"write:messaging\"
+- \"read:mutes\"
+- \"write:mutes\"
+- \"write:notes\"
+- \"read:notifications\"
+- \"write:notifications\"
+- \"write:reactions\"
+- \"write:votes\"
+- \"read:pages\"
+- \"write:pages\"
+- \"write:page-likes\"
+- \"read:page-likes\"
+- \"write:gallery-likes\"
+- \"read:gallery-likes\"
+"
+  (and (stringp object)
+       (or (string-equal object "read:account")
+	   (string-equal object "write:account")
+	   (string-equal object "read:blocks")
+	   (string-equal object "write:blocks")
+	   (string-equal object "read:drive")
+	   (string-equal object "write:drive")
+	   (string-equal object "read:favorites")
+	   (string-equal object "write:favorites")
+	   (string-equal object "read:following")
+	   (string-equal object "write:following")
+	   (string-equal object "read:messaging")
+	   (string-equal object "write:messaging")
+	   (string-equal object "read:mutes")
+	   (string-equal object "write:mutes")
+	   (string-equal object "write:notes")
+	   (string-equal object "read:notifications")
+	   (string-equal object "write:notifications")
+	   (string-equal object "write:reactions")
+	   (string-equal object "write:votes")
+	   (string-equal object "read:pages")
+	   (string-equal object "write:pages")
+	   (string-equal object "write:page-likes")
+	   (string-equal object "read:page-likes")
+	   (string-equal object "write:gallery-likes")
+	   (string-equal object "read:gallery-likes"))))
+
 ;;; API caller functions
 
 ;; TODO: Find good session-id generator
