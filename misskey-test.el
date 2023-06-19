@@ -1,4 +1,4 @@
-;;; misskey.ert.el --- ERT test for misskey.el       -*- lexical-binding: t; -*-
+;;; misskey-test.el --- ERT test for misskey.el       -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023  Cj-bc a.k.a Cj.bc_sd
 
@@ -151,5 +151,5 @@
 		  	(deferred:nextc it 'request-response-data))))
 		 )))
 
-(provide 'misskey.ert)
-;;; misskey.ert.el ends here
+(provide 'misskey-test)
+;;; misskey-ert.el ends here
