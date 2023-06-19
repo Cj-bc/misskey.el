@@ -27,26 +27,26 @@
 (require 'misskey)
 (require 'deferred)
 
-(ert-deftest misskey/json/walk-test/do-nothing-for-nonexist-key ()
+(ert-deftest misskey-test/json/walk-test/do-nothing-for-nonexist-key ()
   "Do nothing if given KEY isn't in OBJ"
   (should (equal (misskey/json/walk '() :nonexist 'id)
 	  '()))
   (should (equal (misskey/json/walk '(:foo "a") :nonexist 'id)
 	  '(:foo "a"))))
 
-(ert-deftest misskey/json/walk-test/keep-unspecified-keys-unchanged ()
+(ert-deftest misskey-test/json/walk-test/keep-unspecified-keys-unchanged ()
   "Keep unspecified keys as is"
   (should (equal (misskey/json/walk '(:foo 1 :bar 2 :baz 3) :foo '1+)
 	  '(:foo 2 :bar 2 :baz 3)))
   (should (equal (misskey/json/walk '(:foo 1 :bar 2 :baz 3) :baz '1+)
 	  '(:foo 1 :bar 2 :baz 4))))
 
-(ert-deftest misskey/json/walks-test ()
+(ert-deftest misskey-test/json/walks-test ()
   "walks should apply each KEY & FUNC accordingly"
   (equal (misskey/json/walks '(:foo 1 :bar 2 :baz 3) :foo '1+ :baz '1+)
 	 '(:foo 2 :bar 2 :baz 4)))
 
-(ert-deftest misskey/json-read-test/createdAt-conversion ()
+(ert-deftest misskey-test/json-read-test/createdAt-conversion ()
   ":createdAt should be \"decoded\" by `decode-time'"
   (should
    (equal (with-temp-buffer
@@ -55,7 +55,7 @@
 	    (misskey/json-read))
 	  '(:createdAt (47 8 12 31 5 2023 nil nil 0)))))
 
-(ert-deftest misskey/json-read-test/updatedAt-conversion ()
+(ert-deftest misskey-test/json-read-test/updatedAt-conversion ()
   ":updatedAt should be \"decoded\" by `decode-time'"
   (should
    (equal (with-temp-buffer
@@ -64,7 +64,7 @@
 	    (misskey/json-read))
 	  '(:updatedAt (47 8 12 31 5 2023 nil nil 0)))))
 
-(ert-deftest misskey-api-test-no-params ()
+(ert-deftest misskey-test/misskey-api/no-params ()
   "No :optional-params :required-params should give `nil' as body"
   (should (equal (macroexpand-1 '(misskey-api test-api))
 		 '(cl-defun misskey/api/test-api (env)
@@ -73,7 +73,7 @@
 			(misskey/call-deferred env "test-api" nil nil)
 			(deferred:nextc it 'request-response-data)))))))
 
-(ert-deftest misskey-api-test/required-params ()
+(ert-deftest misskey-test/misskey-api/required-params ()
   (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp))))
 		 '(cl-defun misskey/api/test-api (env foo)
 		    (when (and (stringp foo) t)
@@ -96,7 +96,7 @@
 		 )))
 
 
-(ert-deftest misskey-api-test/optional-params ()
+(ert-deftest misskey-test/misskey-api/optional-params ()
   ""
   (should (equal (macroexpand-1 '(misskey-api test-api :optional-params ((foo . stringp))))
 		 '(cl-defun misskey/api/test-api (env &key foo)
@@ -119,7 +119,7 @@
 			(deferred:nextc it 'request-response-data))))
 		 )))
 
-(ert-deftest misskey-api-test/required-and-optional-params ()
+(ert-deftest misskey-test/misskey-api/required-and-optional-params ()
   (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp)) :optional-params ((bar . integerp))))
 		 '(cl-defun misskey/api/test-api (env foo &key bar)
 		    (when (and (stringp foo) (or (null bar) (integerp bar)))
