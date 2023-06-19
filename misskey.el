@@ -363,7 +363,7 @@ If response is invalid, this function will throw error.
     (pcase (plist-get result :ok)
       ('t `(:token ,(plist-get result :token) :user ,(plist-get result :user)))
       (:json-false nil)
-      (_ (error "misskey/api/miauth/check: invalid miauth response.")))))
+      (_ (error "misskey/api/miauth/check: Invalid miauth response")))))
 
 (misskey-api users/show
 	     :credential nil
