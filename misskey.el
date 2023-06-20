@@ -324,7 +324,6 @@ Valid strings are:
 	   (string-equal object "read:gallery-likes"))))
 
 
-;; TODO: Find good session-id generator
 
 ;;;; API caller functions:
 ;;;;; miauth:
