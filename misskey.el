@@ -144,8 +144,8 @@ endpoint(e.g. \"users/show\". BODY should be plist of valid request body for PAT
    :data (json-encode (if credential-required (plist-put body :i (misskey/misskeyEnv-token env)) body))
    :parser 'misskey/json-read
    :headers '(("Content-Type" . "application/json"))
-   :error (cl-function (lambda (&key error-thrown &allow-other-keys)
-  			 (message "misskey/call-deferred: (%s)" error-thrown)))))
+   :error (cl-function (lambda (&key error-thrown data &allow-other-keys)
+  			 (message "misskey/call-deferred: %s \n%s" error-thrown (plist-get (plist-get data :error) :message))))))
 
 (cl-defmacro misskey-api (path &key credential required-params optional-params)
   "Create misskey/PATH function as misskey-api endpoint.
