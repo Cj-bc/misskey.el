@@ -35,7 +35,8 @@
 (cl-defstruct misskey/misskeyEnv
   "Contains configurations for API call."
   (host :type string)
-  (token :type string))
+  (token :type string)
+  (username :type string))
 
 ;;;; Internal functions
 
