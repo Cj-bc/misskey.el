@@ -31,13 +31,13 @@
 (require 'seq)
 (require 'org-id) ; Used for generating session-id
 
-;;;; Misskey environments:
+;;;; Misskey environments
 (cl-defstruct misskey/misskeyEnv
   "Contains configurations for API call."
   (host :type string)
   (token :type string))
 
-;;;; Internal functions:
+;;;; Internal functions
 
 (defun misskey/json/walk (obj key func)
   "walk plist and apply FUNC for each occurrence of KEY.
@@ -208,7 +208,7 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 	     (deferred:nextc it 'request-response-data))))))
 
 
-;;;; Predicates:
+;;;; Predicates
 (defun misskey-visibility-p (object)
   "Return t if OBJECT is valid string represents visibility.
 Valid strings are:
@@ -325,8 +325,8 @@ Valid strings are:
 
 
 
-;;;; API caller functions:
-;;;;; miauth:
+;;;; API caller functions
+;;;;; miauth
 (cl-defun misskey/api/miauth/initiate (host &key name icon-url permissions)
   "One of endpoint for Miauth. This will generate sessionID and returns it along with URL user should access.
 In order to accomplish miauth, you should call `misskey/api/miauth/check' with given sessionID after user confirmed
@@ -366,7 +366,7 @@ If response is invalid, this function will throw error.
       (:json-false nil)
       (_ (error "misskey/api/miauth/check: Invalid miauth response")))))
 
-;;;;; Normal APIs:
+;;;;; Normal APIs
 (misskey-api users/show
 	     :credential nil
 	     :required-params
@@ -446,5 +446,5 @@ If response is invalid, this function will throw error.
 ;;; misskey.el ends here
 
 ;; Local Variables:
-;; outline-regexp: ";;;\\(;*\\) \\(?:\\sw\\|\\s-\\)+:"
+;; outline-regexp: ";;;\\(;*\\) \\(?:\\sw\\|\\s-\\)+"
 ;; End:
