@@ -64,6 +64,22 @@
 	    (misskey/json-read))
 	  '(:updatedAt (47 8 12 31 5 2023 nil nil 0)))))
 
+
+(ert-deftest misskey-test/envs/get/not-found-should-return-nil ()
+  "If required env is not registered, it should return nil"
+  (let ((misskey/envs (misskey/envs/empty)))
+    (should (null (misskey/envs/get "foo" "example.com")))))
+
+(ert-deftest misskey-test/envs/get/if-found-return-env ()
+  "If required env is found, return it"
+  (let ((misskey/envs (misskey/envs/empty))
+	(env (make-misskey/misskeyEnv :host "example.com"
+				      :token "dummy"
+				      :username "foo")))
+    (puthash "foo@example.com" env (plist-get misskey/envs :envs))
+    (setf (plist-get misskey/envs :default) "foo@example.com")
+    (should (equal (misskey/envs/get "foo" "example.com") env))))
+
 (ert-deftest misskey-test/misskey-api/no-params ()
   "No :optional-params :required-params should give `nil' as body"
   (should (equal (macroexpand-1 '(misskey-api test-api))
