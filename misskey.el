@@ -38,6 +38,55 @@
   (token :type string)
   (username :type string))
 
+(defvar misskey/envs `(:envs ,(make-hash-table :test 'equal) :default nil)
+  "List of `misskey/misskeyEnv' and index of default env.
+User can store envs as many as they want.
+Default env is indicated by the index.")
+
+(defun misskey/envs/empty ()
+  "Return empty "
+  `(:envs ,(make-hash-table :test 'equal) :default nil))
+
+(defun misskey/envs/make-key (username host)
+  "Returns appropriate key for given USERNAME and HOST."
+  (format "%s@%s" username host))
+
+(defun misskey/envs/get (username host)
+  "Returns env for USERNAME@HOST if exists, nil otherwise."
+  (gethash (misskey/envs/make-key username host) (plist-get misskey/envs :envs)))
+
+(defun misskey/envs/set-default (username host)
+  "Set default env to given one. If `misskey/envs' doesn't have env for given USRNAME@HOST,
+do nothing and return nil."
+  (when (misskey/envs/get username host)
+    (plist-put misskey/envs :default (misskey/envs/make-key username host))))
+
+(defun misskey/envs/add (host username token)
+  "Add new env to `misskey/envs'."
+  (interactive "sHost(e.g. misskey.io): \nsUsername: \nsToken: ")
+  (let ((env (make-misskey/misskeyEnv :host host :token token :username username))
+	(key (misskey/envs/make-key username host)))
+    (puthash key env (plist-get misskey/envs :envs))
+    (unless (plist-get misskey/envs :default)
+      (plist-put misskey/envs :default key))))
+
+(defun misskey/envs/remove (username host)
+  "Remove selected env from `misskey/envs'"
+  (interactive "sUsername: \nsHost: ")
+  (when (misskey/envs/get username host)
+    (remhash (misskey/envs/make-key username host) (plist-get misskey/envs :envs))))
+
+(defun misskey/envs/get-default ()
+  "Returns default env if at least one env is provided, nil otherwise."
+  (when (plist-get misskey/envs :default)
+    (gethash (plist-get misskey/envs :default) (plist-get misskey/envs :envs) )))
+
+(defmacro misskey/with-default-env (env-sym body)
+  "Set default misskeyEnv to ENV-SYM, warn if and execute BODY"
+  `(let ((,env-sym (misskey/envs/get-default)))
+     (if (null ,env-sym) (warn "You haven't set env yet. You should set at least one.")
+       ,body)))
+
 ;;;; Internal functions
 
 (defun misskey/json/walk (obj key func)
