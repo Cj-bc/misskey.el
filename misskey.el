@@ -236,6 +236,33 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 	 (optional-arg-validator
 	  (if (null optional-args) '(t)
 	    (seq-map '(lambda (x) `(or (null ,(car x)) (,(cdr x) ,(car x)))) optional-params)))
+
+	 ;; Generate document for function
+	 (required-params-doc
+	  (let ((header "You should provides all of required args and: \n\n+ ENV should satisfy `misskey/misskeyEnv-p'")
+		(anyOf-string "")
+		(params required-params))
+	    (when is-required-arg-anyOf
+	      (setq header
+		    "You should provides any of args except ENV. If you provides, \n\n+ ENV should satisfy `misskey/misskeyEnv-p'")
+	      (setq anyOf-string " if provided")
+	      (setq params (cdr required-params)))
+	    (seq-reduce `(lambda (acc param) (format "%s\n+ %s should satisfy `%S'%s"
+						     acc (upcase (symbol-name (car param))) (cdr param) ,anyOf-string))
+			params header)))
+	 (optional-params-doc
+	  (if optional-params
+	      (seq-reduce `(lambda (acc param) (format "%s\n+ %s should satisfy `%S'"
+						   acc (upcase (symbol-name (car param))) (cdr param)))
+			  optional-params "If you provides optional arguments:\n")
+	    ""))
+	 (auto-gen-doc
+	  (string-join `("[Note: Documents below are automatically-generated from macro definition]"
+			 ,(if credential
+			      "Credential required to post. You should grant and set token with required permission in ENV"
+			    "")
+			 ,required-params-doc ,optional-params-doc) "\n\n"))
+
 	 (request-body (when (or required-args optional-params)
 			 (let ((keys (seq-map
 				      '(lambda (name)
@@ -247,6 +274,7 @@ Unlike REQUIRED-PARAMS, it is simple list, and element of list are
 			     (if (seq-elt name 1) `(,@acc ,@name) acc))
 			   (list ,@keys) '())))))
     `(cl-defun ,name-sym (env ,@required-args ,@(when optional-args `(&key ,@optional-args)))
+       ,auto-gen-doc
        ;; Even though I can remove 'when' clause technically when no argument is given,
        ;; I intentionally not to do so because that would make code more complicated.
        ;; As a result, generated code sometimes have something like:
