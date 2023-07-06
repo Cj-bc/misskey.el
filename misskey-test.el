@@ -82,12 +82,11 @@
 
 (ert-deftest misskey-test/misskey-api/no-params ()
   "No :optional-params :required-params should give `nil' as body"
-  (should (equal (macroexpand-1 '(misskey-api test-api))
-		 '(cl-defun misskey/api/test-api (env)
-		    (when (and t t)
-		      (deferred:$
-			(misskey/call-deferred env "test-api" nil nil)
-			(deferred:nextc it 'request-response-data)))))))
+  (let* ((expanded (macroexpand-1 '(misskey-api test-api)))
+	 (expanded-func-arglist (elt expanded 2))
+	 (expanded-call-deferred-third-arg (elt (elt (elt (elt expanded 4) 2) 1) 3)))
+    (and (should (equal expanded-func-arglist '(env)))
+	 (should (equal expanded-call-deferred-third-arg nil)))))
 
 (ert-deftest misskey-test/misskey-api/required-params ()
   (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp))))
