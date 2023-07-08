@@ -81,7 +81,8 @@
     (should (equal (misskey/envs/get "foo" "example.com") env))))
 
 (ert-deftest misskey-test/misskey-api/no-params ()
-  "No :optional-params :required-params should give `nil' as body"
+  "No :optional-params :required-params should create function with
+only ENV argument, and pass `nil' as argument for 'misskey/call-deferred'"
   (let* ((expanded (macroexpand-1 '(misskey-api test-api)))
 	 (expanded-func-arglist (elt expanded 2))
 	 (expanded-call-deferred-third-arg (elt (elt (elt (elt expanded 4) 2) 1) 3)))
