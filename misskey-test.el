@@ -90,82 +90,49 @@ only ENV argument, and pass `nil' as argument for 'misskey/call-deferred'"
 	 (should (equal expanded-call-deferred-third-arg nil)))))
 
 (ert-deftest misskey-test/misskey-api/required-params ()
-  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp))))
-		 '(cl-defun misskey/api/test-api (env foo)
-		    (when (and (stringp foo) t)
-		      (deferred:$
-			(misskey/call-deferred env "test-api"
-					       (seq-reduce (lambda (acc name)
-							      (if (seq-elt name 1) `(,@acc ,@name) acc))
-							   (list (list :foo foo)) '()) nil)
-			(deferred:nextc it 'request-response-data))))
-		 ))
-  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp) (bar . integerp))))
-		 '(cl-defun misskey/api/test-api (env foo bar)
-		    (when (and (stringp foo) (integerp bar) t)
-		      (deferred:$
-			(misskey/call-deferred env "test-api"
-					       (seq-reduce (lambda (acc name)
-							      (if (seq-elt name 1) `(,@acc ,@name) acc))
-							   (list (list :foo foo) (list :bar bar)) '()) nil)
-			(deferred:nextc it 'request-response-data))))
-		 )))
+  "`misskey-api' should define parameters given by :required-params as normal argument,
+ and pass it to `misskey/call-deferred' as is"
+  (let* ((expanded (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp)))))
+	 (expanded-func-arglist (elt expanded 2))
+	 (expanded-call-deferred-third-arg (elt (elt (elt (elt expanded 4) 2) 1) 3)))
+    (and (should (equal expanded-func-arglist '(env foo)))
+	 (should (equal (eval expanded-call-deferred-third-arg '((foo . "test"))) '(:foo "test"))))))
 
 
 (ert-deftest misskey-test/misskey-api/optional-params ()
-  ""
-  (should (equal (macroexpand-1 '(misskey-api test-api :optional-params ((foo . stringp))))
-		 '(cl-defun misskey/api/test-api (env &key foo)
-		    (when (and t (or (null foo) (stringp foo)))
-		      (deferred:$
-			(misskey/call-deferred env "test-api"
-					       (seq-reduce (lambda (acc name)
-							      (if (seq-elt name 1) `(,@acc ,@name) acc))
-							   (list (list :foo foo)) '()) nil)
-			(deferred:nextc it 'request-response-data))))
-		 ))
-  (should (equal (macroexpand-1 '(misskey-api test-api :optional-params ((foo . stringp) (bar . integerp))))
-		 '(cl-defun misskey/api/test-api (env &key foo bar)
-		    (when (and t (or (null foo) (stringp foo)) (or (null bar) (integerp bar)))
-		      (deferred:$
-			(misskey/call-deferred env "test-api"
-					       (seq-reduce (lambda (acc name)
-							      (if (seq-elt name 1) `(,@acc ,@name) acc))
-							   (list (list :foo foo) (list :bar bar)) '()) nil)
-			(deferred:nextc it 'request-response-data))))
-		 )))
+  ":optional-params should be defined by `&key', and should be applied to `misskey/call-deferred'"
+  (let* ((expanded (macroexpand-1 '(misskey-api test-api :optional-params ((foo . stringp)))))
+	 (expanded-func-arglist (elt expanded 2))
+	 (expanded-call-deferred-third-arg (elt (elt (elt (elt expanded 4) 2) 1) 3))
+
+	 ;; With multiple optional params
+	 (multi-expanded (macroexpand-1 '(misskey-api test-api :optional-params ((foo . stringp) (bar . integerp)))))
+	 (multi-expanded-func-arglist (elt multi-expanded 2))
+	 (multi-expanded-call-deferred-third-arg (elt (elt (elt (elt multi-expanded 4) 2) 1) 3))
+	 )
+    (and (should (equal expanded-func-arglist '(env &key foo)))
+	 (should (equal (eval expanded-call-deferred-third-arg '((foo . "foo"))) '(:foo "foo")))
+
+	 (should (equal multi-expanded-func-arglist '(env &key foo bar)))
+	 (should (equal (eval multi-expanded-call-deferred-third-arg '((foo . "foo") (bar . 1))) '(:foo "foo" :bar 1)))
+	 ;; When optional-param value is NIL, it should not be given to `misskey/call-deferred'
+	 (should (equal (eval multi-expanded-call-deferred-third-arg '((foo . "foo") (bar . nil))) '(:foo "foo"))))))
+
+(ert-deftest misskey-test/misskey-api/optional-params/omit-if-nil ()
+  "optional params should not be passed to `misskey/call-deferred' if it isn't passed to generated function"
+  (let* ((expanded (macroexpand-1 '(misskey-api test-api :optional-params ((foo . stringp)))))
+	 (expanded-func-arglist (elt expanded 2))
+	 (expanded-call-deferred-third-arg (elt (elt (elt (elt expanded 4) 2) 1) 3)))
+    (and (should (equal expanded-func-arglist '(env &key foo)))
+	 (should (equal (eval expanded-call-deferred-third-arg '((foo . nil))) '())))))
 
 (ert-deftest misskey-test/misskey-api/required-and-optional-params ()
-  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp)) :optional-params ((bar . integerp))))
-		 '(cl-defun misskey/api/test-api (env foo &key bar)
-		    (when (and (stringp foo) (or (null bar) (integerp bar)))
-		      (deferred:$
-			(misskey/call-deferred env "test-api"
-					       (seq-reduce (lambda (acc name)
-							     (if (seq-elt name 1) `(,@acc ,@name) acc))
-							   (list (list :foo foo) (list :bar bar)) '()) nil)
-			(deferred:nextc it 'request-response-data))))
-		 ))
-  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp) (baz . numberp)) :optional-params ((bar . integerp))))
-		 '(cl-defun misskey/api/test-api (env foo baz &key bar)
-		    (when (and (stringp foo) (numberp baz) (or (null bar) (integerp bar)))
-		      (deferred:$
-		  	(misskey/call-deferred env "test-api"
-		  			       (seq-reduce (lambda (acc name)
-		  					     (if (seq-elt name 1) `(,@acc ,@name) acc))
-		  					   (list (list :foo foo) (list :baz baz) (list :bar bar)) '()) nil)
-		  	(deferred:nextc it 'request-response-data))))
-		 ))
-  (should (equal (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp) ) :optional-params ((bar . integerp) (baz . numberp))))
-		 '(cl-defun misskey/api/test-api (env foo &key bar baz)
-		    (when (and (stringp foo)  (or (null bar) (integerp bar)) (or (null baz) (numberp baz)))
-		      (deferred:$
-		  	(misskey/call-deferred env "test-api"
-		  			       (seq-reduce (lambda (acc name)
-		  					     (if (seq-elt name 1) `(,@acc ,@name) acc))
-		  					   (list (list :foo foo) (list :bar bar) (list :baz baz)) '()) nil)
-		  	(deferred:nextc it 'request-response-data))))
-		 )))
+  (let* ((expanded (macroexpand-1 '(misskey-api test-api :required-params ((foo . stringp)) :optional-params ((bar . integerp)))))
+	 (expanded-func-arglist (elt expanded 2))
+	 (expanded-call-deferred-third-arg (elt (elt (elt (elt expanded 4) 2) 1) 3)))
+    (and (should (equal expanded-func-arglist '(env foo &key bar)))
+	 (should (equal (eval expanded-call-deferred-third-arg '((foo . "bar") (bar . 1))) '(:foo "bar" :bar 1)))
+	 (should (equal (eval expanded-call-deferred-third-arg '((foo . "bar") (bar . nil))) '(:foo "bar"))))))
 
 (provide 'misskey-test)
 ;;; misskey-ert.el ends here
