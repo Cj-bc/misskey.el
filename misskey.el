@@ -105,7 +105,7 @@ Paired save function is `misskey/envs/save-as-sexp'
     ((and (pred file-readable-p) fn)
      (with-temp-buffer
        (insert-file-contents fn)
-       (read-from-string (buffer-string))))
+       (car (read-from-string (buffer-string)))))
     (_ misskey/envs/empty)))
 
 
