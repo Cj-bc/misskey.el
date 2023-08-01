@@ -44,7 +44,7 @@ User can store envs as many as they want.
 Default env is indicated by the index.")
 
 (defvar misskey/envs/save-restore-funcs
-  ('misskey/envs/save-as-sexp . 'misskey/envs/restore-as-sexp)
+  '(misskey/envs/save-as-sexp . misskey/envs/restore-as-sexp)
   "Pair of functions to save and restore `misskey/envs'.")
 
 (defvar misskey/envs/save-file (format "%smisskey-el.envs" user-emacs-directory)
