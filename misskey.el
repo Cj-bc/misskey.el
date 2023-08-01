@@ -93,7 +93,7 @@ do nothing and return nil."
 Paired save function is `misskey/envs/restore-as-sexp'
 "
   (pcase (expand-file-name misskey/envs/save-file)
-    ((and (pred (not 'file-writable-p)) fn)
+    ((and (pred 'file-writable-p) fn)
      (write-region (prin1-to-string misskey/envs) nil fn))
     (_ (error "Specified save-file '%s' is not writable file" misskey/envs/save-file))))
 
