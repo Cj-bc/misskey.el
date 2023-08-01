@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2023  Cj-bc a.k.a Cj.bc_sd
 
-;; Author:  <cj.bc_sd@outlook.jp>
+;; Author:  <cj.bc-sd@outlook.jp>
 ;; Keywords: comm, lisp
 ;; Package-Requires: (request-deferred deferred)
 
