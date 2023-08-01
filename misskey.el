@@ -43,6 +43,13 @@
 User can store envs as many as they want.
 Default env is indicated by the index.")
 
+(defvar misskey/envs/save-restore-funcs
+  ('misskey/envs/save-as-sexp . 'misskey/envs/restore-as-sexp)
+  "Pair of functions to save and restore `misskey/envs'.")
+
+(defvar misskey/envs/save-file (format "%smisskey-el.envs" user-emacs-directory)
+  "File to save serialized `misskey/envs'.")
+
 (defun misskey/envs/empty ()
   "Return empty "
   `(:envs ,(make-hash-table :test 'equal) :default nil))
@@ -80,6 +87,40 @@ do nothing and return nil."
   "Returns default env if at least one env is provided, nil otherwise."
   (when (plist-get misskey/envs :default)
     (gethash (plist-get misskey/envs :default) (plist-get misskey/envs :envs) )))
+
+(defun misskey/envs/save-as-sexp ()
+  "Save envs as plain sexp into file.
+Paired save function is `misskey/envs/restore-as-sexp'
+"
+  (pcase (expand-file-name misskey/envs/save-file)
+    ((and (pred (not 'file-writable-p)) fn)
+     (write-region (prin1-to-string misskey/envs) nil fn))
+    (_ (error "Specified save-file '%s' is not writable file" misskey/envs/save-file))))
+
+(defun misskey/envs/restore-as-sexp ()
+  "Restore envs saved as sexp from file.
+Paired save function is `misskey/envs/save-as-sexp'
+"
+  (pcase (expand-file-name misskey/envs/save-file)
+    ((and (pred 'file-readable-p) fn)
+     (with-temp-buffer
+       (insert-file-contents fn)
+       (read-from-string (buffer-string))))
+    (_ misskey/envs/empty)))
+
+
+(defun misskey/envs/save ()
+  "Save current `misskey/envs' into file by using function
+specified in `misskey/envs/save-restore-funcs'."
+  (pcase (car misskey/envs/save-restore-funcs)
+    ((and (pred functionp) saver) (funcall saver))
+    (_ (error "Wrong type set to car of misskey/envs/save-restore-funcs"))))
+
+(defun misskey/envs/restore ()
+  "Restore `misskey/envs' from fine"
+  (pcase (cdr misskey/envs/save-restore-funcs)
+    ((and (pred functionp) saver) (funcall saver))
+    (_ (error "Wrong type set to cdr of misskey/envs/save-restore-funcs"))))
 
 (defmacro misskey/with-default-env (env-sym body)
   "Set default misskeyEnv to ENV-SYM, warn if and execute BODY"
